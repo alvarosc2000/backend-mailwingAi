@@ -4,7 +4,9 @@ import * as gmail from "../integrations/gmailIntegration";
 import * as connections from "./connectionsService";
 
 export async function checkGmailTriggers() {
-  const { data: automationsList } = await automations.getActiveAutomations();
+  const userId = "some_user_id"; // obtenerlo de tu contexto
+  const { data: automationsList } = await automations.getActiveAutomations(userId);
+
   if (!automationsList) return;
 
   for (const automation of automationsList) {
