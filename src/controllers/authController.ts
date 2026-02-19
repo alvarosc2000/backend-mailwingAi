@@ -1,27 +1,19 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
 import 'dotenv/config';
+
 import { createClient } from "@supabase/supabase-js";
-import nodemailer from "nodemailer";
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE!
 );
 
-// Configuración del SMTP
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
 
 /**
  * Registro de usuario
+ * - Verifica que la contraseña se escriba dos veces
+ * - Usa Supabase para crear el usuario
  */
 export const register = async (req: Request, res: Response) => {
   const { email, password, confirmPassword } = req.body;
@@ -70,15 +62,6 @@ export const register = async (req: Request, res: Response) => {
       return res.status(500).json({ error: "Billing creation failed" });
     }
 
-    // ✅ Enviar correo de confirmación usando SMTP
-    await transporter.sendMail({
-      from: `"MailWingAI" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Confirma tu cuenta",
-      html: `<p>Bienvenido a MailWingAI!</p>
-             <p>Haz click <a href="${process.env.CONFIRMATION_URL}?email=${encodeURIComponent(email)}">aquí</a> para confirmar tu cuenta.</p>`,
-    });
-
     return res.status(201).json({
       message: "Usuario creado. Revisa tu email para confirmar la cuenta.",
       user: data.user,
@@ -89,6 +72,11 @@ export const register = async (req: Request, res: Response) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+
+
+
+
 
 /**
  * Login de usuario
@@ -104,6 +92,7 @@ export const login = async (req: Request, res: Response) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return res.status(400).json({ error: error.message });
 
+    // ⚡ Aquí mandamos el access_token directamente
     res.json({ 
       user: data.user, 
       token: data.session?.access_token 
@@ -117,12 +106,13 @@ export const login = async (req: Request, res: Response) => {
  * Obtener información del usuario logueado
  */
 export const getMe = async (req: Request, res: Response) => {
-  const user = (req as any).user;
+  const user = (req as any).user; // Requiere authMiddleware
   res.json({ user });
 };
 
 /**
  * Cambiar contraseña del usuario autenticado
+ * - Requiere token de Service Role Key
  */
 export const changePassword = async (req: Request, res: Response) => {
   const { newPassword } = req.body;
@@ -155,25 +145,18 @@ export const forgotPassword = async (req: Request, res: Response) => {
   if (!redirectUrl) return res.status(500).json({ error: "RESET_PASSWORD_URL no definida" });
 
   try {
-    // ✅ Generar link de recuperación (puedes usar un token propio o Supabase)
-    const token = Buffer.from(email).toString("base64"); // ejemplo simple
-
-    await transporter.sendMail({
-      from: `"MailWingAI" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Recupera tu contraseña",
-      html: `<p>Haz click <a href="${redirectUrl}?token=${token}">aquí</a> para restablecer tu contraseña</p>`,
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
     });
+    if (error) return res.status(400).json({ error: error.message });
 
-    res.json({ message: "Email de recuperación enviado" });
+    res.json({ message: "Email de recuperación enviado", data });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 };
 
-/**
- * Cambiar contraseña desde backend usando access_token
- */
+// Cambiar contraseña desde backend usando access_token
 export const resetPassword = async (req: Request, res: Response) => {
   const { newPassword, access_token } = req.body;
   if (!newPassword || !access_token)
@@ -188,7 +171,6 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 /**
  * Reenviar confirmación de email
  */
@@ -197,8 +179,10 @@ export const resendConfirmationEmail = async (req: Request, res: Response) => {
 
   if (!email || !password) return res.status(400).json({ error: "Email y contraseña requeridos" });
 
+  // Llamar a signUp de nuevo con el mismo email para reenviar confirmación
   const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) return res.status(400).json({ error: error.message });
   res.json({ message: "Email de confirmación reenviado", user: data.user });
 };
+
