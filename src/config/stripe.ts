@@ -5,7 +5,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) throw new Error("STRIPE_SECRET_KEY no definida");
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2025-11-17.clover",
+  apiVersion: "2026-01-28.clover",
 });
 
 

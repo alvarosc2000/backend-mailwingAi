@@ -23,23 +23,26 @@ export class ConnectionsController {
   // =========================
   // ELIMINAR CONEXIÓN
   // =========================
-  static async deleteConnection(req: Request, res: Response) {
-    try {
-      const userId = (req as any).user.id;
-      const { id } = req.params;
+static async deleteConnection(req: Request, res: Response) {
+  try {
+    const userId = (req as any).user.id;
+    const idParam = req.params.id;
 
-      if (!id) {
-        return res.status(400).json({ error: "ID de conexión requerido" });
-      }
+    const id = Array.isArray(idParam) ? idParam[0] : idParam;
 
-      await service.deleteConnection(id, userId);
-
-      res.json({ success: true });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Error eliminando conexión" });
+    if (!id) {
+      return res.status(400).json({ error: "ID de conexión requerido" });
     }
+
+    await service.deleteConnection(id, userId);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error eliminando conexión" });
   }
+}
+
 
 // =========================
 // INICIAR OAUTH GMAIL
