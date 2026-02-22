@@ -14,7 +14,7 @@ import checkoutRoutes from "./routes/checkoutRoutes";
 import billingRoutes from "./routes/billingRoutes"; 
 
 const app = express();
-startScheduler();
+//startScheduler();
 
 /**
  * -------------------------
