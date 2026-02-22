@@ -63,7 +63,7 @@ export async function runTriggerCheck(automation: any) {
   }
 
   if (!emails.messages || emails.messages.length === 0) {
-    console.log("📭 No hay emails nuevos para esta automatización");
+   // console.log("📭 No hay emails nuevos para esta automatización");
     return;
   }
 
