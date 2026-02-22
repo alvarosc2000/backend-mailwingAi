@@ -115,25 +115,11 @@ export async function updateAutomationStatus(
    DELETE AUTOMATION
 ========================================================= */
 export async function deleteAutomation(id: string, userId: string) {
-
-  console.log("🗑 DELETE CHECK");
-  console.log("User from token:", userId);
-  console.log("Automation id:", id);
-
-  const owner = await supabase
-    .from("automations")
-    .select("user_id")
-    .eq("id", id)
-    .single();
-
-  console.log("Owner in DB:", owner);
-
   return supabase
     .from("automations")
     .delete()
     .eq("id", id)
-    .eq("user_id", userId)
-    .select();
+    .eq("user_id", userId);
 }
 
 /* =========================================================

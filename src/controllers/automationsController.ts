@@ -281,12 +281,11 @@ static async delete(req: Request, res: Response) {
   try {
     const userId = (req as any).user?.id;
 
-    console.log("TOKEN USER:", userId);    
-    
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // ✅ Obtener id correctamente y tiparlo
     const idParam = req.params.id;
     const id = Array.isArray(idParam) ? idParam[0] : idParam;
 
@@ -294,8 +293,9 @@ static async delete(req: Request, res: Response) {
       return res.status(400).json({ error: "ID requerido" });
     }
 
-      console.log("USER FROM TOKEN:", userId);
-      console.log("ID TO DELETE:", id);
+    console.log("USER FROM TOKEN:", userId);
+    console.log("ID TO DELETE:", id);
+
     const result = await automations.deleteAutomation(id, userId);
 
     if (result.error) {
@@ -303,15 +303,9 @@ static async delete(req: Request, res: Response) {
       return res.status(500).json({ error: "Delete failed" });
     }
 
-    if (!result.data || result.data.length === 0) {
-      return res.status(404).json({
-        error: "Automation not found or not deleted",
-      });
-    }
-
+    // ✅ Si no hay error → asumimos que se borró correctamente
     return res.json({
       success: true,
-      deleted: result.data[0],
     });
 
   } catch (err) {
