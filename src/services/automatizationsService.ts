@@ -105,7 +105,7 @@ export async function updateAutomationStatus(
     .from("automations")
     .update({ status })
     .eq("id", automationId)
-    .eq("user_id", userId)
+   // .eq("user_id", userId)
     .select(); // No single() para mantener consistencia
 }
 
