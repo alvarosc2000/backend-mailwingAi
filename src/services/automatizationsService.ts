@@ -117,7 +117,7 @@ export async function deleteAutomation(id: string, userId: string) {
     .from("automations")
     .delete()
     .eq("id", id)
-    .eq("user_id", userId)
+   //.eq("user_id", userId)
     .select(); // Devuelve data si eliminó algo
 }
 
