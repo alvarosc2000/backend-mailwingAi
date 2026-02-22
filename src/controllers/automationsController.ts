@@ -270,6 +270,9 @@ static async updateStatus(req: Request, res: Response) {
 static async delete(req: Request, res: Response) {
   try {
     const userId = (req as any).user?.id;
+
+    console.log("TOKEN USER:", userId);    
+    
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -280,6 +283,10 @@ static async delete(req: Request, res: Response) {
     if (!id) {
       return res.status(400).json({ error: "ID requerido" });
     }
+
+
+    console.log("DELETE USER:", userId);
+    console.log("DELETE ID:", id);
 
     const { error } = await automations.deleteAutomation(id, userId);
 
