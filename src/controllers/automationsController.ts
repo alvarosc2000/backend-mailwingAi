@@ -246,18 +246,28 @@ static async updateStatus(req: Request, res: Response) {
     }
 
     // ✅ Actualizar estado
-    const { error } = await automations.updateAutomationStatus(
+    const result = await automations.updateAutomationStatus(
       id,
       userId,
       status
     );
 
-    if (error) {
-      console.error("Update status error:", error);
+    if (result.error) {
+      console.error("Update status error:", result.error);
       return res.status(500).json({ error: "Update failed" });
     }
 
-    return res.json({ success: true });
+    if (!result.data || result.data.length === 0) {
+      return res.status(404).json({
+        error: "Automation not found or not updated",
+      });
+    }
+
+    return res.json({
+      success: true,
+      automation: result.data[0],
+    });
+
   } catch (err) {
     console.error("❌ Error actualizando status:", err);
     return res.status(500).json({ code: "INTERNAL_ERROR" });
@@ -284,18 +294,27 @@ static async delete(req: Request, res: Response) {
       return res.status(400).json({ error: "ID requerido" });
     }
 
-
     console.log("DELETE USER:", userId);
     console.log("DELETE ID:", id);
 
-    const { error } = await automations.deleteAutomation(id, userId);
+    const result = await automations.deleteAutomation(id, userId);
 
-    if (error) {
-      console.error("Delete error:", error);
+    if (result.error) {
+      console.error("Delete error:", result.error);
       return res.status(500).json({ error: "Delete failed" });
     }
 
-    return res.json({ success: true });
+    if (!result.data || result.data.length === 0) {
+      return res.status(404).json({
+        error: "Automation not found or not deleted",
+      });
+    }
+
+    return res.json({
+      success: true,
+      deleted: result.data[0],
+    });
+
   } catch (err) {
     console.error("❌ Error eliminando automatización:", err);
     return res.status(500).json({ code: "INTERNAL_ERROR" });
