@@ -213,27 +213,49 @@ static async create(req: Request, res: Response) {
 static async updateStatus(req: Request, res: Response) {
   try {
     const userId = (req as any).user?.id;
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const idParam = req.params.id;
     const id = Array.isArray(idParam) ? idParam[0] : idParam;
 
     const { status } = req.body;
-    if (!id) return res.status(400).json({ error: "ID requerido" });
-    if (!["active", "paused"].includes(status)) return res.status(400).json({ error: "status inválido" });
 
-    // Si se activa → comprobar límite
+    if (!id) {
+      return res.status(400).json({ error: "ID requerido" });
+    }
+
+    if (!["active", "paused"].includes(status)) {
+      return res.status(400).json({ error: "status inválido" });
+    }
+
+    // 🔥 Si se activa → validar límite de plan
     if (status === "active") {
-      const { data: active } = await automations.getAllActiveAutomationsByUser(userId);
+      const { data: active } =
+        await automations.getAllActiveAutomationsByUser(userId);
+
       const sub = await getUserSubscription(userId);
       const limit = sub ? getAutomationLimit(sub) : 0;
 
-      if ((active?.length ?? 0) >= limit)
-        return res.status(409).json({ code: "AUTOMATION_LIMIT_REACHED" });
+      if ((active?.length ?? 0) >= limit) {
+        return res.status(409).json({
+          code: "AUTOMATION_LIMIT_REACHED",
+        });
+      }
     }
 
-    const { data, error } = await automations.updateAutomationStatus(id, userId, status);
-    if (error || !data || data.length === 0) return res.status(404).json({ error: "No encontrada" });
+    // ✅ Actualizar estado
+    const { error } = await automations.updateAutomationStatus(
+      id,
+      userId,
+      status
+    );
+
+    if (error) {
+      console.error("Update status error:", error);
+      return res.status(500).json({ error: "Update failed" });
+    }
 
     return res.json({ success: true });
   } catch (err) {
@@ -246,18 +268,31 @@ static async updateStatus(req: Request, res: Response) {
 // DELETE
 // =============================
 static async delete(req: Request, res: Response) {
-  const userId = (req as any).user?.id;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-  const idParam = req.params.id;
-  const id = Array.isArray(idParam) ? idParam[0] : idParam;
+    const idParam = req.params.id;
+    const id = Array.isArray(idParam) ? idParam[0] : idParam;
 
-  if (!id) return res.status(400).json({ error: "ID requerido" });
+    if (!id) {
+      return res.status(400).json({ error: "ID requerido" });
+    }
 
-  const { data, error } = await automations.deleteAutomation(id, userId);
-  if (error || !data || data.length === 0) return res.status(404).json({ error: "No encontrada" });
+    const { error } = await automations.deleteAutomation(id, userId);
 
-  return res.json({ success: true });
+    if (error) {
+      console.error("Delete error:", error);
+      return res.status(500).json({ error: "Delete failed" });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("❌ Error eliminando automatización:", err);
+    return res.status(500).json({ code: "INTERNAL_ERROR" });
+  }
 }
 
 // =============================
