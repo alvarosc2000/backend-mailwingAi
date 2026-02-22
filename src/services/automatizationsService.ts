@@ -115,11 +115,15 @@ export async function updateAutomationStatus(
    DELETE AUTOMATION
 ========================================================= */
 export async function deleteAutomation(id: string, userId: string) {
-  return supabase
-    .from("automations")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
+const result = await supabase
+  .from("automations")
+  .delete()
+  .eq("id", id)
+  .eq("user_id", userId);
+
+console.log("DELETE RESULT:", result);
+
+return result;
 }
 
 /* =========================================================
