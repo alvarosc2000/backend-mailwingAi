@@ -114,18 +114,16 @@ export async function updateAutomationStatus(
 /* =========================================================
    DELETE AUTOMATION
 ========================================================= */
-export async function deleteAutomation(id: string, userId: string) {
-const result = await supabase
-  .from("automations")
-  .delete()
-  .eq("id", id)
-  .eq("user_id", userId);
+export async function deleteAutomation(id: string) {
+  const result = await supabase
+    .from("automations")
+    .delete()
+    .eq("id", id)
+    .select();
 
-console.log("DELETE RESULT:", result);
-
-return result;
+  console.log("DELETE RESULT:", result);
+  return result;
 }
-
 /* =========================================================
    UTILS PARA PLAN Y LÍMITES
 ========================================================= */

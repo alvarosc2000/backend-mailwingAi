@@ -296,7 +296,7 @@ static async delete(req: Request, res: Response) {
     console.log("USER FROM TOKEN:", userId);
     console.log("ID TO DELETE:", id);
 
-    const result = await automations.deleteAutomation(id, userId);
+    const result = await automations.deleteAutomation(id);
 
     if (result.error) {
       console.error("Delete error:", result.error);
