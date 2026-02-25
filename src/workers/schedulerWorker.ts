@@ -4,23 +4,23 @@ import { runTriggerCheck } from "./triggersWorker";
 
 export function startScheduler() {
   cron.schedule("*/5 * * * * *", async () => {
-    //console.log("✅ Scheduler ejecutado");
+    console.log("✅ Scheduler ejecutado");
 
     const { data: automations, error } =
       await automationsService.getAllActiveAutomations();
 
     if (error) {
-      //console.error("❌ Error cargando automatizaciones:", error);
+      console.error("❌ Error cargando automatizaciones:", error);
       return;
     }
 
     if (!automations || automations.length === 0) {
-      //console.log("⚠️ No hay automatizaciones activas");
+      console.log("⚠️ No hay automatizaciones activas");
       return;
     }
 
     for (const automation of automations) {
-      //console.log("🔔 Ejecutando trigger:", automation.name);
+      console.log("🔔 Ejecutando trigger:", automation.name);
       await runTriggerCheck(automation);
     }
   });
