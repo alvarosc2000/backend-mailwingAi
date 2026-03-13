@@ -101,13 +101,13 @@ static async create(req: Request, res: Response) {
 
       if (actions.some((a: any) => a.type.startsWith("sheets."))) {
         const sheet = await sheets.createSpreadsheet(googleToken, name, [
-          "Fecha",
-          "Origen",
-          "Prioridad",
-          "Categoría",
-          "Sentimiento",
-          "Requiere acción",
-          "Resumen IA",
+          "Date",
+          "Source",
+          "Priority",
+          "Category",
+          "Sentiment",
+          "Requires action",
+          "AI Summary",
         ]);
 
         if (sheet?.sheetId) {
