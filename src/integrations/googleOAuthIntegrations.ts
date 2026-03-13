@@ -8,7 +8,6 @@ const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI!;
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
 const GOOGLE_SCOPES = [
-  "https://www.googleapis.com/auth/spreadsheets",
   "https://www.googleapis.com/auth/drive.file",
   "https://www.googleapis.com/auth/gmail.modify",
 ];
